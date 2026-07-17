@@ -42,10 +42,6 @@ class Athlete(db.Model):
         "ChangeLog", backref="athlete", lazy=True, order_by="ChangeLog.change_date.desc()",
         cascade="all, delete-orphan",
     )
-    extra_fields = db.relationship(
-        "AthleteExtraField", backref="athlete", lazy=True, order_by="AthleteExtraField.id",
-        cascade="all, delete-orphan",
-    )
 
     @property
     def full_name(self):
@@ -84,14 +80,3 @@ class ListChangeRecord(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     number = db.Column(db.String(50), nullable=False)
     date = db.Column(db.Date, nullable=False)
-
-
-class AthleteExtraField(db.Model):
-    """Дополнительные поля из зачётной классификационной книжки спортсмена, которых нет в карточке."""
-    __tablename__ = "athlete_extra_field"
-
-    id = db.Column(db.Integer, primary_key=True)
-    athlete_id = db.Column(db.Integer, db.ForeignKey("athlete.id"), nullable=False)
-
-    field_name = db.Column(db.String(200), nullable=False)
-    field_value = db.Column(db.String(500))
