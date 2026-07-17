@@ -5,7 +5,7 @@ from datetime import date, datetime
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 
 import references
-from models import Athlete, ChangeLog, db
+from models import Athlete, AthleteExtraField, ChangeLog, db
 
 bp = Blueprint("athletes", __name__, url_prefix="/athletes")
 
@@ -294,7 +294,7 @@ def athletes_new():
 @bp.route("/<int:athlete_id>")
 def athletes_detail(athlete_id):
     athlete = Athlete.query.get_or_404(athlete_id)
-    return render_template("athletes/detail.html", athlete=athlete)
+    return render_template("athletes/detail.html", athlete=athlete, references=references)
 
 
 @bp.route("/<int:athlete_id>/edit", methods=["GET", "POST"])
@@ -387,6 +387,44 @@ def change_log_delete(log_id):
     db.session.delete(log)
     db.session.commit()
     flash("Запись о членстве в сборной команде удалена", "success")
+    return redirect(url_for("athletes.athletes_detail", athlete_id=athlete_id))
+
+
+@bp.route("/<int:athlete_id>/extra-fields", methods=["POST"])
+def athlete_extra_field_add(athlete_id):
+    athlete = Athlete.query.get_or_404(athlete_id)
+    field_name = request.form.get("field_name", "").strip()
+    field_value = request.form.get("field_value", "").strip()
+    if not field_name:
+        flash("Укажите название поля", "error")
+        return redirect(url_for("athletes.athletes_detail", athlete_id=athlete.id))
+    db.session.add(AthleteExtraField(athlete_id=athlete.id, field_name=field_name, field_value=field_value or None))
+    db.session.commit()
+    flash("Поле добавлено", "success")
+    return redirect(url_for("athletes.athletes_detail", athlete_id=athlete.id))
+
+
+@bp.route("/extra-fields/<int:field_id>/edit", methods=["POST"])
+def athlete_extra_field_edit(field_id):
+    field = AthleteExtraField.query.get_or_404(field_id)
+    field_name = request.form.get("field_name", "").strip()
+    if not field_name:
+        flash("Укажите название поля", "error")
+        return redirect(url_for("athletes.athletes_detail", athlete_id=field.athlete_id))
+    field.field_name = field_name
+    field.field_value = request.form.get("field_value", "").strip() or None
+    db.session.commit()
+    flash("Поле обновлено", "success")
+    return redirect(url_for("athletes.athletes_detail", athlete_id=field.athlete_id))
+
+
+@bp.route("/extra-fields/<int:field_id>/delete", methods=["POST"])
+def athlete_extra_field_delete(field_id):
+    field = AthleteExtraField.query.get_or_404(field_id)
+    athlete_id = field.athlete_id
+    db.session.delete(field)
+    db.session.commit()
+    flash("Поле удалено", "success")
     return redirect(url_for("athletes.athletes_detail", athlete_id=athlete_id))
 
 
