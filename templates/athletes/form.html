@@ -110,6 +110,10 @@
             <input type="text" name="organization" class="form-control" list="organizations-list" value="{{ athlete.organization if athlete else '' }}">
         </div>
         <div class="col-md-6">
+            <label class="form-label">Место работы (учёбы)</label>
+            <input type="text" name="workplace" class="form-control" value="{{ athlete.workplace if athlete else '' }}">
+        </div>
+        <div class="col-md-6">
             <label class="form-label">Личный тренер</label>
             <input type="text" name="trainer" class="form-control" list="trainers-list" value="{{ athlete.trainer if athlete else '' }}">
         </div>
